@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="منصة الدورات التعليمية - أفضل منصة عربية للدورات التعليمية عبر الإنترنت">
-    <meta name="keywords" content="دورات, تعليم, برمجة, تصميم, تسويق">
-    <title>منصة الدورات التعليمية</title>
-    
+    <meta name="description" content="المتجر الإلكتروني - أفضل متجر عربي للتسوق أونلاين">
+    <meta name="keywords" content="متجر, تسوق, إلكترونيات, ملابس, أحذية, إكسسوارات">
+    <title>المتجر الإلكتروني - تسوق أونلاين</title>
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    
+
     <!-- Styles -->
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -22,42 +22,53 @@
         <div class="container">
             <nav class="navbar">
                 <a href="index.html" class="logo">
-                    <span class="material-icons">school</span>
-                    <span>منصة الدورات</span>
+                    <span class="material-icons">store</span>
+                    <span>المتجر الإلكتروني</span>
                 </a>
-                
+
                 <div class="nav-links" id="navLinks">
                     <a href="index.html" class="nav-link active">الرئيسية</a>
-                    <a href="courses.html" class="nav-link">الدورات</a>
-                    <a href="categories.html" class="nav-link">التصنيفات</a>
-                    <a href="about.html" class="nav-link">من نحن</a>
+                    <a href="products.html" class="nav-link">المنتجات</a>
+                    <a href="categories.html" class="nav-link">الفئات</a>
+                    <a href="offers.html" class="nav-link">العروض</a>
                     <a href="contact.html" class="nav-link">اتصل بنا</a>
                 </div>
-                
+
                 <div class="nav-actions">
+                    <button class="btn-icon" id="searchToggle">
+                        <span class="material-icons">search</span>
+                    </button>
+                    
+                    <button class="btn-icon" id="favoritesBtn">
+                        <span class="material-icons">favorite_border</span>
+                        <span class="badge" id="favoritesCount">0</span>
+                    </button>
+
                     <button class="btn-icon" id="cartBtn">
                         <span class="material-icons">shopping_cart</span>
                         <span class="badge" id="cartCount">0</span>
                     </button>
-                    
+
                     <div class="auth-buttons" id="authButtons">
                         <a href="login.html" class="btn btn-outline">تسجيل الدخول</a>
                         <a href="register.html" class="btn btn-primary">إنشاء حساب</a>
                     </div>
-                    
+
                     <div class="user-menu hidden" id="userMenu">
                         <button class="user-avatar" id="userAvatar">
                             <span class="material-icons">person</span>
                         </button>
                         <div class="dropdown-menu">
                             <a href="profile.html"><span class="material-icons">person</span> الملف الشخصي</a>
-                            <a href="my-courses.html"><span class="material-icons">school</span> دوراتي</a>
+                            <a href="orders.html"><span class="material-icons">shopping_bag</span> طلباتي</a>
+                            <a href="favorites.html"><span class="material-icons">favorite</span> المفضلة</a>
+                            <a href="addresses.html"><span class="material-icons">location_on</span> العناوين</a>
                             <hr>
                             <button id="logoutBtn"><span class="material-icons">logout</span> تسجيل الخروج</button>
                         </div>
                     </div>
                 </div>
-                
+
                 <button class="mobile-menu-btn" id="mobileMenuBtn">
                     <span class="material-icons">menu</span>
                 </button>
@@ -65,33 +76,61 @@
         </div>
     </header>
 
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="searchOverlay">
+        <div class="container">
+            <form class="search-form-overlay" id="searchForm">
+                <input type="text" class="search-input-overlay" id="searchInput" placeholder="ابحث عن منتج...">
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons">search</span>
+                </button>
+                <button type="button" class="btn-icon" id="searchClose">
+                    <span class="material-icons">close</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Hero Section -->
     <section class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1 class="hero-title">تعلم مهارات جديدة وطور مستقبلك</h1>
-                <p class="hero-subtitle">انضم إلى آلاف الطلاب واكتسب المهارات التي يحتاجها سوق العمل</p>
-                
-                <form class="search-form" id="searchForm">
-                    <input type="text" class="search-input" id="searchInput" placeholder="ابحث عن دورة...">
-                    <button type="submit" class="btn btn-primary">
-                        <span class="material-icons">search</span>
-                        بحث
-                    </button>
-                </form>
-                
-                <div class="hero-stats">
+        <div class="hero-slider">
+            <div class="hero-slide active">
+                <div class="container">
+                    <div class="hero-content">
+                        <span class="hero-tag">عروض حصرية</span>
+                        <h1 class="hero-title">تسوق أحدث المنتجات بأفضل الأسعار</h1>
+                        <p class="hero-subtitle">اكتشف تشكيلة واسعة من المنتجات عالية الجودة مع خدمة توصيل سريعة</p>
+                        <div class="hero-buttons">
+                            <a href="products.html" class="btn btn-primary btn-lg">تسوق الآن</a>
+                            <a href="offers.html" class="btn btn-outline btn-lg">عرض العروض</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="hero-stats">
+            <div class="container">
+                <div class="stats-grid">
                     <div class="stat-item">
-                        <span class="stat-value">+500</span>
-                        <span class="stat-label">دورة تعليمية</span>
+                        <span class="stat-icon"><span class="material-icons">inventory_2</span></span>
+                        <span class="stat-value">+5000</span>
+                        <span class="stat-label">منتج متنوع</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-value">+10,000</span>
-                        <span class="stat-label">طالب نشط</span>
+                        <span class="stat-icon"><span class="material-icons">groups</span></span>
+                        <span class="stat-value">+50,000</span>
+                        <span class="stat-label">عميل سعيد</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-value">+100</span>
-                        <span class="stat-label">مدرب محترف</span>
+                        <span class="stat-icon"><span class="material-icons">local_shipping</span></span>
+                        <span class="stat-value">توصيل</span>
+                        <span class="stat-label">سريع ومجاني</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon"><span class="material-icons">verified</span></span>
+                        <span class="stat-value">ضمان</span>
+                        <span class="stat-label">جودة المنتج</span>
                     </div>
                 </div>
             </div>
@@ -102,26 +141,52 @@
     <section class="section categories-section">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">تصفح التصنيفات</h2>
+                <h2 class="section-title">تصفح الفئات</h2>
                 <a href="categories.html" class="btn btn-outline">عرض الكل</a>
             </div>
-            
+
             <div class="categories-grid" id="categoriesGrid">
                 <!-- Categories will be loaded dynamically -->
             </div>
         </div>
     </section>
 
-    <!-- Featured Courses Section -->
+    <!-- Featured Products Section -->
     <section class="section featured-section">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">الدورات المميزة</h2>
-                <a href="courses.html" class="btn btn-outline">عرض الكل</a>
+                <h2 class="section-title">المنتجات المميزة</h2>
+                <a href="products.html?featured=1" class="btn btn-outline">عرض الكل</a>
             </div>
-            
-            <div class="courses-grid" id="featuredCourses">
-                <!-- Courses will be loaded dynamically -->
+
+            <div class="products-grid" id="featuredProducts">
+                <!-- Products will be loaded dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Offers Banner -->
+    <section class="offers-banner">
+        <div class="container">
+            <div class="banner-content">
+                <span class="banner-tag">عرض محدود</span>
+                <h2>خصم يصل إلى 50% على الإلكترونيات</h2>
+                <p>استفد من العروض الحصرية قبل انتهاء الكمية</p>
+                <a href="products.html?category=1" class="btn btn-white">تسوق الآن</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Arrivals Section -->
+    <section class="section new-arrivals-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">وصل حديثاً</h2>
+                <a href="products.html?sort=newest" class="btn btn-outline">عرض الكل</a>
+            </div>
+
+            <div class="products-grid" id="newArrivals">
+                <!-- Products will be loaded dynamically -->
             </div>
         </div>
     </section>
@@ -129,51 +194,52 @@
     <!-- Features Section -->
     <section class="section features-section">
         <div class="container">
-            <h2 class="section-title text-center">لماذا تختارنا؟</h2>
-            
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <span class="material-icons">verified</span>
+                        <span class="material-icons">local_shipping</span>
                     </div>
-                    <h3 class="feature-title">محتوى عالي الجودة</h3>
-                    <p class="feature-description">دورات معدة بواسطة خبراء ومحترفين في مجالاتهم</p>
+                    <h3 class="feature-title">شحن مجاني</h3>
+                    <p class="feature-description">شحن مجاني للطلبات أكثر من 500 ريال</p>
                 </div>
-                
+
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <span class="material-icons">devices</span>
+                        <span class="material-icons">replay</span>
                     </div>
-                    <h3 class="feature-title">تعلم من أي مكان</h3>
-                    <p class="feature-description">اصل إلى المحتوى من أي جهاز وفي أي وقت</p>
+                    <h3 class="feature-title">إرجاع مجاني</h3>
+                    <p class="feature-description">إمكانية الإرجاع خلال 14 يوم</p>
                 </div>
-                
+
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <span class="material-icons">workspace_premium</span>
+                        <span class="material-icons">verified_user</span>
                     </div>
-                    <h3 class="feature-title">شهادات معتمدة</h3>
-                    <p class="feature-description">احصل على شهادة إتمام لكل دورة تنهيها</p>
+                    <h3 class="feature-title">ضمان الجودة</h3>
+                    <p class="feature-description">جميع المنتجات أصلية ومضمونة</p>
                 </div>
-                
+
                 <div class="feature-card">
                     <div class="feature-icon">
-                        <span class="material-icons">support_agent</span>
+                        <span class="material-icons">headset_mic</span>
                     </div>
-                    <h3 class="feature-title">دعم فني مستمر</h3>
-                    <p class="feature-description">فريق دعم متاح للإجابة على استفساراتك</p>
+                    <h3 class="feature-title">دعم 24/7</h3>
+                    <p class="feature-description">خدمة عملاء على مدار الساعة</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="cta-section">
+    <!-- Newsletter Section -->
+    <section class="newsletter-section">
         <div class="container">
-            <div class="cta-content">
-                <h2>ابدأ رحلة التعلم الآن</h2>
-                <p>انضم إلى مجتمعنا واستثمر في نفسك</p>
-                <a href="register.html" class="btn btn-white">سجل مجاناً</a>
+            <div class="newsletter-content">
+                <h2>اشترك في نشرتنا البريدية</h2>
+                <p>احصل على أحدث العروض والخصومات الحصرية</p>
+                <form class="newsletter-form" id="newsletterForm">
+                    <input type="email" placeholder="أدخل بريدك الإلكتروني" required>
+                    <button type="submit" class="btn btn-primary">اشتراك</button>
+                </form>
             </div>
         </div>
     </section>
@@ -183,47 +249,54 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-section">
-                    <h3 class="footer-title">منصة الدورات</h3>
-                    <p>أفضل منصة عربية للدورات التعليمية عبر الإنترنت</p>
+                    <h3 class="footer-title">المتجر الإلكتروني</h3>
+                    <p>وجهتك الأولى للتسوق أونلاين بأفضل الأسعار والجودة</p>
                     <div class="social-links">
                         <a href="#"><span class="material-icons">facebook</span></a>
-                        <a href="#"><span class="material-icons">twitter</span></a>
                         <a href="#"><span class="material-icons">instagram</span></a>
+                        <a href="#"><span class="material-icons">twitter</span></a>
                         <a href="#"><span class="material-icons">youtube</span></a>
                     </div>
                 </div>
-                
+
                 <div class="footer-section">
                     <h3 class="footer-title">روابط سريعة</h3>
                     <ul class="footer-links">
-                        <li><a href="courses.html">الدورات</a></li>
-                        <li><a href="categories.html">التصنيفات</a></li>
+                        <li><a href="products.html">المنتجات</a></li>
+                        <li><a href="categories.html">الفئات</a></li>
+                        <li><a href="offers.html">العروض</a></li>
                         <li><a href="about.html">من نحن</a></li>
-                        <li><a href="contact.html">اتصل بنا</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-section">
-                    <h3 class="footer-title">الدعم</h3>
+                    <h3 class="footer-title">خدمة العملاء</h3>
                     <ul class="footer-links">
                         <li><a href="faq.html">الأسئلة الشائعة</a></li>
+                        <li><a href="shipping.html">الشحن والتوصيل</a></li>
+                        <li><a href="returns.html">سياسة الإرجاع</a></li>
                         <li><a href="privacy.html">سياسة الخصوصية</a></li>
-                        <li><a href="terms.html">الشروط والأحكام</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-section">
                     <h3 class="footer-title">تواصل معنا</h3>
                     <ul class="contact-info">
-                        <li><span class="material-icons">email</span> info@example.com</li>
+                        <li><span class="material-icons">email</span> info@store.com</li>
                         <li><span class="material-icons">phone</span> +966 12 345 6789</li>
                         <li><span class="material-icons">location_on</span> الرياض، السعودية</li>
                     </ul>
+                    <div class="payment-methods">
+                        <img src="images/visa.png" alt="Visa">
+                        <img src="images/mastercard.png" alt="Mastercard">
+                        <img src="images/mada.png" alt="Mada">
+                        <img src="images/apple-pay.png" alt="Apple Pay">
+                    </div>
                 </div>
             </div>
-            
+
             <div class="footer-bottom">
-                <p>&copy; 2024 منصة الدورات التعليمية. جميع الحقوق محفوظة.</p>
+                <p>&copy; 2024 المتجر الإلكتروني. جميع الحقوق محفوظة.</p>
             </div>
         </div>
     </footer>

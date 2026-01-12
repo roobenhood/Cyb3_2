@@ -1,9 +1,10 @@
 <?php
 /**
  * Categories API Endpoints
- * نقاط نهاية API للتصنيفات
+ * نقاط نهاية API للفئات - المتجر الإلكتروني
  */
 
+header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
@@ -41,113 +42,134 @@ switch ($action) {
         Response::error('إجراء غير صالح', [], 400);
 }
 
+/**
+ * Get all categories
+ */
 function getCategories() {
-    $category = new Category();
-    $categories = $category->getAll();
-    Response::success($categories);
+    try {
+        $categoryModel = new Category();
+        $categories = $categoryModel->getAll();
+        
+        Response::success('تم جلب الفئات بنجاح', $categories);
+    } catch (Exception $e) {
+        Response::error('فشل في جلب الفئات', [], 500);
+    }
 }
 
+/**
+ * Get single category
+ */
 function getCategory() {
     $id = (int)($_GET['id'] ?? 0);
-    
+
     if (!$id) {
-        Response::error('معرف التصنيف مطلوب', [], 400);
+        Response::error('معرف الفئة مطلوب', [], 400);
+        return;
     }
 
-    $category = new Category();
-    $categoryData = $category->findById($id);
+    try {
+        $categoryModel = new Category();
+        $category = $categoryModel->getById($id);
 
-    if (!$categoryData) {
-        Response::notFound('التصنيف غير موجود');
+        if (!$category) {
+            Response::error('الفئة غير موجودة', [], 404);
+            return;
+        }
+
+        Response::success('تم جلب الفئة', $category);
+    } catch (Exception $e) {
+        Response::error('فشل في جلب الفئة', [], 500);
     }
-
-    Response::success($categoryData);
 }
 
+/**
+ * Create category (Admin only)
+ */
 function createCategory() {
-    Auth::requireAuth();
+    $user = Auth::requireAuth();
+    if (!$user) return;
+
+    if ($user['role'] !== 'admin') {
+        Response::error('غير مصرح', [], 403);
+        return;
+    }
 
     $data = json_decode(file_get_contents('php://input'), true);
 
     $validator = new Validator($data);
-    $isValid = $validator->validate([
-        'name' => 'required|min:2|max:100'
-    ]);
+    $validator->required('name', 'اسم الفئة مطلوب');
 
-    if (!$isValid) {
-        Response::validationError($validator->getErrors());
+    if (!$validator->isValid()) {
+        Response::error('بيانات غير صالحة', $validator->getErrors(), 422);
+        return;
     }
 
-    $category = new Category();
-    $id = $category->create(
-        Validator::sanitize($data['name']),
-        Validator::sanitize($data['description'] ?? ''),
-        $data['icon'] ?? null
-    );
+    try {
+        $categoryModel = new Category();
+        $categoryId = $categoryModel->create($data);
+        $category = $categoryModel->getById($categoryId);
 
-    if ($id) {
-        Response::success(['id' => $id], 'تم إنشاء التصنيف بنجاح', 201);
-    } else {
-        Response::serverError('فشل إنشاء التصنيف');
+        Response::success('تم إنشاء الفئة بنجاح', $category, [], 201);
+    } catch (Exception $e) {
+        Response::error('فشل في إنشاء الفئة', [], 500);
     }
 }
 
+/**
+ * Update category (Admin only)
+ */
 function updateCategory() {
-    Auth::requireAuth();
+    $user = Auth::requireAuth();
+    if (!$user) return;
+
+    if ($user['role'] !== 'admin') {
+        Response::error('غير مصرح', [], 403);
+        return;
+    }
 
     $id = (int)($_GET['id'] ?? 0);
-    
     if (!$id) {
-        Response::error('معرف التصنيف مطلوب', [], 400);
+        Response::error('معرف الفئة مطلوب', [], 400);
+        return;
     }
 
     $data = json_decode(file_get_contents('php://input'), true);
 
-    $validator = new Validator($data);
-    $isValid = $validator->validate([
-        'name' => 'min:2|max:100'
-    ]);
+    try {
+        $categoryModel = new Category();
+        $categoryModel->update($id, $data);
+        $category = $categoryModel->getById($id);
 
-    if (!$isValid) {
-        Response::validationError($validator->getErrors());
-    }
-
-    $category = new Category();
-    
-    if (!$category->findById($id)) {
-        Response::notFound('التصنيف غير موجود');
-    }
-
-    $updateData = [];
-    if (isset($data['name'])) $updateData['name'] = Validator::sanitize($data['name']);
-    if (isset($data['description'])) $updateData['description'] = Validator::sanitize($data['description']);
-    if (isset($data['icon'])) $updateData['icon'] = $data['icon'];
-
-    if ($category->update($id, $updateData)) {
-        Response::success(null, 'تم تحديث التصنيف بنجاح');
-    } else {
-        Response::serverError('فشل تحديث التصنيف');
+        Response::success('تم تحديث الفئة بنجاح', $category);
+    } catch (Exception $e) {
+        Response::error('فشل في تحديث الفئة', [], 500);
     }
 }
 
+/**
+ * Delete category (Admin only)
+ */
 function deleteCategory() {
-    Auth::requireAuth();
+    $user = Auth::requireAuth();
+    if (!$user) return;
+
+    if ($user['role'] !== 'admin') {
+        Response::error('غير مصرح', [], 403);
+        return;
+    }
 
     $id = (int)($_GET['id'] ?? 0);
-    
     if (!$id) {
-        Response::error('معرف التصنيف مطلوب', [], 400);
+        Response::error('معرف الفئة مطلوب', [], 400);
+        return;
     }
 
-    $category = new Category();
-    
-    if (!$category->findById($id)) {
-        Response::notFound('التصنيف غير موجود');
-    }
+    try {
+        $categoryModel = new Category();
+        $categoryModel->delete($id);
 
-    if ($category->delete($id)) {
-        Response::success(null, 'تم حذف التصنيف بنجاح');
-    } else {
-        Response::serverError('فشل حذف التصنيف');
+        Response::success('تم حذف الفئة بنجاح');
+    } catch (Exception $e) {
+        Response::error('فشل في حذف الفئة', [], 500);
     }
 }

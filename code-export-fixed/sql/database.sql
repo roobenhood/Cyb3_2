@@ -1,14 +1,14 @@
 -- =============================================
--- Database Schema for Course Platform
--- قاعدة بيانات منصة الدورات التعليمية
+-- Database Schema for E-Commerce Store
+-- قاعدة بيانات المتجر الإلكتروني
 -- =============================================
 
 -- Create Database
-CREATE DATABASE IF NOT EXISTS courses_platform 
-CHARACTER SET utf8mb4 
+CREATE DATABASE IF NOT EXISTS ecommerce_store
+CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
 
-USE courses_platform;
+USE ecommerce_store;
 
 -- =============================================
 -- Users Table - جدول المستخدمين
@@ -20,123 +20,66 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     phone VARCHAR(20) DEFAULT NULL,
     avatar VARCHAR(255) DEFAULT NULL,
-    role ENUM('admin', 'instructor', 'student') DEFAULT 'student',
+    role ENUM('admin', 'customer') DEFAULT 'customer',
     is_active TINYINT(1) DEFAULT 1,
     email_verified_at TIMESTAMP NULL DEFAULT NULL,
     remember_token VARCHAR(100) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
+
     INDEX idx_email (email),
     INDEX idx_role (role),
     INDEX idx_is_active (is_active)
 ) ENGINE=InnoDB;
 
 -- =============================================
--- Categories Table - جدول التصنيفات
+-- Categories Table - جدول الفئات
 -- =============================================
 CREATE TABLE categories (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT DEFAULT NULL,
     icon VARCHAR(50) DEFAULT NULL,
+    image_url VARCHAR(255) DEFAULT NULL,
+    parent_id INT DEFAULT NULL,
+    is_active TINYINT(1) DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    INDEX idx_name (name)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL,
+    INDEX idx_name (name),
+    INDEX idx_parent (parent_id)
 ) ENGINE=InnoDB;
 
 -- =============================================
--- Courses Table - جدول الدورات
+-- Products Table - جدول المنتجات
 -- =============================================
-CREATE TABLE courses (
+CREATE TABLE products (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
-    instructor_id INT NOT NULL,
     category_id INT NOT NULL,
-    thumbnail VARCHAR(255) DEFAULT NULL,
+    image_url VARCHAR(255) DEFAULT NULL,
+    images TEXT DEFAULT NULL COMMENT 'JSON array of image URLs',
     price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     discount_price DECIMAL(10,2) DEFAULT NULL,
-    level ENUM('beginner', 'intermediate', 'advanced') DEFAULT 'beginner',
-    duration INT DEFAULT 0 COMMENT 'Duration in minutes',
+    stock INT DEFAULT 0,
+    sku VARCHAR(50) DEFAULT NULL,
     is_featured TINYINT(1) DEFAULT 0,
-    is_published TINYINT(1) DEFAULT 0,
+    is_active TINYINT(1) DEFAULT 1,
+    rating DECIMAL(3,2) DEFAULT 0.00,
+    review_count INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE,
+
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
-    
-    INDEX idx_instructor (instructor_id),
+
     INDEX idx_category (category_id),
-    INDEX idx_level (level),
     INDEX idx_is_featured (is_featured),
-    INDEX idx_is_published (is_published),
+    INDEX idx_is_active (is_active),
     INDEX idx_price (price),
-    FULLTEXT INDEX idx_search (title, description)
-) ENGINE=InnoDB;
-
--- =============================================
--- Lessons Table - جدول الدروس
--- =============================================
-CREATE TABLE lessons (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    course_id INT NOT NULL,
-    title VARCHAR(255) NOT NULL,
-    description TEXT DEFAULT NULL,
-    video_url VARCHAR(500) DEFAULT NULL,
-    duration INT DEFAULT 0 COMMENT 'Duration in minutes',
-    order_num INT DEFAULT 0,
-    is_free TINYINT(1) DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
-    
-    INDEX idx_course (course_id),
-    INDEX idx_order (order_num)
-) ENGINE=InnoDB;
-
--- =============================================
--- Enrollments Table - جدول التسجيلات
--- =============================================
-CREATE TABLE enrollments (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    course_id INT NOT NULL,
-    progress DECIMAL(5,2) DEFAULT 0.00,
-    completed_lessons TEXT DEFAULT NULL COMMENT 'Comma-separated lesson IDs',
-    is_completed TINYINT(1) DEFAULT 0,
-    enrolled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    completed_at TIMESTAMP NULL DEFAULT NULL,
-    
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
-    
-    UNIQUE KEY unique_enrollment (user_id, course_id),
-    INDEX idx_user (user_id),
-    INDEX idx_course (course_id),
-    INDEX idx_is_completed (is_completed)
-) ENGINE=InnoDB;
-
--- =============================================
--- Reviews Table - جدول التقييمات
--- =============================================
-CREATE TABLE reviews (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    course_id INT NOT NULL,
-    rating TINYINT NOT NULL CHECK (rating >= 1 AND rating <= 5),
-    comment TEXT DEFAULT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
-    
-    UNIQUE KEY unique_review (user_id, course_id),
-    INDEX idx_course (course_id),
-    INDEX idx_rating (rating)
+    INDEX idx_stock (stock),
+    FULLTEXT INDEX idx_search (name, description)
 ) ENGINE=InnoDB;
 
 -- =============================================
@@ -145,13 +88,15 @@ CREATE TABLE reviews (
 CREATE TABLE cart (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    course_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
-    
-    UNIQUE KEY unique_cart_item (user_id, course_id),
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+
+    UNIQUE KEY unique_cart_item (user_id, product_id),
     INDEX idx_user (user_id)
 ) ENGINE=InnoDB;
 
@@ -161,13 +106,105 @@ CREATE TABLE cart (
 CREATE TABLE favorites (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    course_id INT NOT NULL,
+    product_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
-    
-    UNIQUE KEY unique_favorite (user_id, course_id),
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+
+    UNIQUE KEY unique_favorite (user_id, product_id),
+    INDEX idx_user (user_id)
+) ENGINE=InnoDB;
+
+-- =============================================
+-- Orders Table - جدول الطلبات
+-- =============================================
+CREATE TABLE orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    order_number VARCHAR(50) NOT NULL UNIQUE,
+    subtotal DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    shipping DECIMAL(10,2) DEFAULT 0.00,
+    tax DECIMAL(10,2) DEFAULT 0.00,
+    total DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    status ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending',
+    shipping_address TEXT DEFAULT NULL,
+    billing_address TEXT DEFAULT NULL,
+    payment_method VARCHAR(50) DEFAULT NULL,
+    payment_status ENUM('pending', 'paid', 'failed', 'refunded') DEFAULT 'pending',
+    notes TEXT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+
+    INDEX idx_user (user_id),
+    INDEX idx_order_number (order_number),
+    INDEX idx_status (status),
+    INDEX idx_payment_status (payment_status)
+) ENGINE=InnoDB;
+
+-- =============================================
+-- Order Items Table - جدول عناصر الطلب
+-- =============================================
+CREATE TABLE order_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    product_name VARCHAR(255) NOT NULL,
+    product_image VARCHAR(255) DEFAULT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    price DECIMAL(10,2) NOT NULL,
+    total DECIMAL(10,2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+
+    INDEX idx_order (order_id),
+    INDEX idx_product (product_id)
+) ENGINE=InnoDB;
+
+-- =============================================
+-- Reviews Table - جدول التقييمات
+-- =============================================
+CREATE TABLE reviews (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    product_id INT NOT NULL,
+    rating TINYINT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT DEFAULT NULL,
+    is_approved TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+
+    UNIQUE KEY unique_review (user_id, product_id),
+    INDEX idx_product (product_id),
+    INDEX idx_rating (rating)
+) ENGINE=InnoDB;
+
+-- =============================================
+-- Addresses Table - جدول العناوين
+-- =============================================
+CREATE TABLE addresses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    address_line1 VARCHAR(255) NOT NULL,
+    address_line2 VARCHAR(255) DEFAULT NULL,
+    postal_code VARCHAR(20) DEFAULT NULL,
+    is_default TINYINT(1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+
     INDEX idx_user (user_id)
 ) ENGINE=InnoDB;
 
@@ -180,7 +217,7 @@ CREATE TABLE password_resets (
     token VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     expires_at TIMESTAMP NOT NULL,
-    
+
     INDEX idx_email (email),
     INDEX idx_token (token)
 ) ENGINE=InnoDB;
@@ -194,7 +231,7 @@ CREATE TABLE settings (
     setting_value TEXT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
+
     INDEX idx_key (setting_key)
 ) ENGINE=InnoDB;
 
@@ -206,62 +243,43 @@ CREATE TABLE settings (
 INSERT INTO users (name, email, password, role, is_active, email_verified_at) VALUES
 ('المدير', 'admin@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 1, NOW());
 
--- Insert Instructor (password: password)
+-- Insert Customer (password: password)
 INSERT INTO users (name, email, password, role, is_active, email_verified_at) VALUES
-('أحمد محمد', 'instructor@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'instructor', 1, NOW());
-
--- Insert Student (password: password)
-INSERT INTO users (name, email, password, role, is_active, email_verified_at) VALUES
-('علي أحمد', 'student@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'student', 1, NOW());
+('أحمد محمد', 'customer@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'customer', 1, NOW());
 
 -- Insert Categories
-INSERT INTO categories (name, description, icon) VALUES
-('البرمجة', 'دورات تعليم البرمجة وتطوير البرمجيات', 'code'),
-('التصميم', 'دورات التصميم الجرافيكي وتصميم واجهات المستخدم', 'palette'),
-('التسويق', 'دورات التسويق الرقمي والإلكتروني', 'trending_up'),
-('اللغات', 'دورات تعلم اللغات الأجنبية', 'language'),
-('إدارة الأعمال', 'دورات إدارة الأعمال والمشاريع', 'business');
+INSERT INTO categories (name, description, icon, is_active) VALUES
+('الإلكترونيات', 'أجهزة إلكترونية ومستلزماتها', 'devices', 1),
+('الملابس', 'ملابس رجالية ونسائية وأطفال', 'checkroom', 1),
+('الأحذية', 'أحذية رياضية وكلاسيكية', 'footprint', 1),
+('الإكسسوارات', 'ساعات، نظارات، مجوهرات', 'watch', 1),
+('المنزل والحديقة', 'أثاث ومستلزمات منزلية', 'home', 1);
 
--- Insert Sample Courses
-INSERT INTO courses (title, description, instructor_id, category_id, price, discount_price, level, duration, is_featured, is_published) VALUES
-('تعلم Flutter من الصفر', 'دورة شاملة لتعلم تطوير تطبيقات الموبايل باستخدام Flutter', 2, 1, 99.99, 79.99, 'beginner', 1200, 1, 1),
-('أساسيات تصميم الجرافيك', 'تعلم أساسيات التصميم باستخدام Adobe Photoshop و Illustrator', 2, 2, 79.99, NULL, 'beginner', 800, 1, 1),
-('التسويق الرقمي المتقدم', 'استراتيجيات التسويق الرقمي للمحترفين', 2, 3, 149.99, 119.99, 'advanced', 1500, 1, 1),
-('تطوير الويب بـ React', 'تعلم بناء تطبيقات الويب الحديثة باستخدام React.js', 2, 1, 129.99, 99.99, 'intermediate', 1000, 0, 1),
-('اللغة الإنجليزية للأعمال', 'دورة متخصصة في اللغة الإنجليزية لبيئة العمل', 2, 4, 59.99, NULL, 'intermediate', 600, 0, 1);
-
--- Insert Sample Lessons
-INSERT INTO lessons (course_id, title, description, video_url, duration, order_num, is_free) VALUES
--- Flutter Course Lessons
-(1, 'مقدمة في Flutter', 'تعرف على Flutter ومميزاته', 'https://example.com/video1.mp4', 15, 1, 1),
-(1, 'تثبيت بيئة التطوير', 'كيفية تثبيت Flutter و Android Studio', 'https://example.com/video2.mp4', 20, 2, 1),
-(1, 'أول تطبيق Flutter', 'بناء أول تطبيق باستخدام Flutter', 'https://example.com/video3.mp4', 30, 3, 0),
-(1, 'Widgets الأساسية', 'تعلم الـ Widgets الأساسية في Flutter', 'https://example.com/video4.mp4', 45, 4, 0),
-(1, 'إدارة الحالة', 'مقدمة في إدارة الحالة State Management', 'https://example.com/video5.mp4', 60, 5, 0),
-
--- Design Course Lessons
-(2, 'مقدمة في التصميم', 'أساسيات ومبادئ التصميم الجرافيكي', 'https://example.com/video6.mp4', 20, 1, 1),
-(2, 'واجهة Photoshop', 'التعرف على واجهة برنامج Photoshop', 'https://example.com/video7.mp4', 25, 2, 0),
-(2, 'أدوات التحديد', 'استخدام أدوات التحديد المختلفة', 'https://example.com/video8.mp4', 30, 3, 0),
-
--- Marketing Course Lessons
-(3, 'مقدمة في التسويق الرقمي', 'أساسيات التسويق الرقمي', 'https://example.com/video9.mp4', 25, 1, 1),
-(3, 'التسويق عبر وسائل التواصل', 'استراتيجيات التسويق على السوشيال ميديا', 'https://example.com/video10.mp4', 40, 2, 0);
+-- Insert Sample Products
+INSERT INTO products (name, description, category_id, price, discount_price, stock, is_featured, is_active, rating, review_count) VALUES
+('هاتف ذكي سامسونج جالاكسي', 'هاتف ذكي بمواصفات عالية وكاميرا احترافية وشاشة AMOLED', 1, 2499.99, 1999.99, 50, 1, 1, 4.5, 128),
+('لابتوب ماك بوك برو', 'لابتوب احترافي للمطورين والمصممين بمعالج M2', 1, 5999.99, NULL, 25, 1, 1, 4.8, 89),
+('سماعات أيربودز برو', 'سماعات لاسلكية بخاصية إلغاء الضوضاء', 1, 899.99, 749.99, 100, 1, 1, 4.6, 256),
+('ساعة آبل الذكية', 'ساعة ذكية لتتبع اللياقة والصحة', 1, 1599.99, 1399.99, 75, 0, 1, 4.4, 167),
+('قميص رجالي كلاسيكي', 'قميص قطني بجودة عالية للمناسبات الرسمية', 2, 199.99, 149.99, 200, 0, 1, 4.2, 45),
+('فستان نسائي أنيق', 'فستان سهرة أنيق بتصميم عصري', 2, 349.99, NULL, 80, 1, 1, 4.7, 78),
+('حذاء رياضي نايك', 'حذاء رياضي مريح للجري والتمارين', 3, 449.99, 379.99, 150, 1, 1, 4.5, 234),
+('حذاء رسمي جلد طبيعي', 'حذاء رجالي فاخر من الجلد الطبيعي', 3, 599.99, NULL, 60, 0, 1, 4.3, 56),
+('نظارة شمسية ريبان', 'نظارة شمسية أصلية بحماية UV400', 4, 699.99, 549.99, 120, 0, 1, 4.6, 89),
+('طاولة قهوة خشبية', 'طاولة قهوة أنيقة من الخشب الطبيعي', 5, 899.99, 749.99, 30, 0, 1, 4.4, 34);
 
 -- Insert Sample Reviews
-INSERT INTO reviews (user_id, course_id, rating, comment) VALUES
-(3, 1, 5, 'دورة ممتازة ومفيدة جداً، شرح واضح ومبسط'),
-(3, 2, 4, 'دورة جيدة، أتمنى المزيد من التطبيقات العملية');
-
--- Insert Sample Enrollments
-INSERT INTO enrollments (user_id, course_id, progress, completed_lessons) VALUES
-(3, 1, 40.00, '1,2'),
-(3, 2, 33.33, '1');
+INSERT INTO reviews (user_id, product_id, rating, comment) VALUES
+(2, 1, 5, 'منتج ممتاز والتوصيل سريع جداً'),
+(2, 2, 5, 'أفضل لابتوب استخدمته في حياتي'),
+(2, 3, 4, 'جودة صوت ممتازة لكن البطارية تحتاج تحسين');
 
 -- Insert Default Settings
 INSERT INTO settings (setting_key, setting_value) VALUES
-('site_name', 'منصة الدورات التعليمية'),
-('site_description', 'أفضل منصة عربية للدورات التعليمية عبر الإنترنت'),
+('site_name', 'المتجر الإلكتروني'),
+('site_description', 'أفضل متجر إلكتروني عربي للتسوق أونلاين'),
 ('contact_email', 'info@example.com'),
-('currency', 'USD'),
-('currency_symbol', '$');
+('currency', 'SAR'),
+('shipping_cost', '25.00'),
+('free_shipping_threshold', '500.00'),
+('tax_rate', '15');

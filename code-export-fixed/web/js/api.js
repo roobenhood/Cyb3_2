@@ -1,6 +1,6 @@
 /**
  * API Service
- * خدمة الاتصال بـ API
+ * خدمة الاتصال بـ API - المتجر الإلكتروني
  */
 
 class ApiService {
@@ -33,7 +33,7 @@ class ApiService {
     // Generic request method
     async request(endpoint, options = {}) {
         const url = `${this.baseUrl}/${endpoint}`;
-        
+
         try {
             const response = await fetch(url, {
                 ...options,
@@ -83,10 +83,7 @@ class ApiService {
         return this.request(endpoint, { method: 'DELETE', auth });
     }
 
-    // ==========================================
-    // Auth Endpoints
-    // ==========================================
-
+    // ========== Auth APIs ==========
     async login(email, password) {
         return this.post('auth.php?action=login', { email, password });
     }
@@ -103,109 +100,122 @@ class ApiService {
         return this.put('auth.php?action=update-profile', data, true);
     }
 
-    async changePassword(currentPassword, newPassword, confirmPassword) {
-        return this.put('auth.php?action=change-password', {
-            current_password: currentPassword,
-            new_password: newPassword,
-            new_password_confirmation: confirmPassword
-        }, true);
+    // ========== Products APIs ==========
+    async getProducts(filters = {}) {
+        const params = new URLSearchParams(filters).toString();
+        return this.get(`products.php?action=list&${params}`);
     }
 
-    // ==========================================
-    // Courses Endpoints
-    // ==========================================
-
-    async getCourses(params = {}) {
-        const query = new URLSearchParams(params).toString();
-        return this.get(`courses.php?action=list&${query}`);
+    async getProduct(id) {
+        return this.get(`products.php?action=get&id=${id}`);
     }
 
-    async getFeaturedCourses(limit = 6) {
-        return this.get(`courses.php?action=featured&limit=${limit}`);
+    async getFeaturedProducts(limit = 8) {
+        return this.get(`products.php?action=featured&limit=${limit}`);
     }
 
-    async getCourse(id) {
-        return this.get(`courses.php?action=get&id=${id}`, true);
+    async getNewArrivals(limit = 8) {
+        return this.get(`products.php?action=new&limit=${limit}`);
     }
 
-    async enrollCourse(courseId) {
-        return this.post(`courses.php?action=enroll&id=${courseId}`, {}, true);
+    async searchProducts(query) {
+        return this.get(`products.php?action=search&q=${encodeURIComponent(query)}`);
     }
 
-    async getMyCourses() {
-        return this.get('courses.php?action=my-courses', true);
+    async getProductReviews(productId) {
+        return this.get(`products.php?action=reviews&id=${productId}`);
     }
 
-    // ==========================================
-    // Categories Endpoints
-    // ==========================================
+    async addReview(productId, rating, comment) {
+        return this.post('products.php?action=add-review', { product_id: productId, rating, comment }, true);
+    }
 
+    // ========== Categories APIs ==========
     async getCategories() {
         return this.get('categories.php?action=list');
     }
 
-    // ==========================================
-    // Cart Endpoints
-    // ==========================================
+    async getCategory(id) {
+        return this.get(`categories.php?action=get&id=${id}`);
+    }
 
+    // ========== Cart APIs ==========
     async getCart() {
         return this.get('cart.php?action=list', true);
     }
 
-    async addToCart(courseId) {
-        return this.post('cart.php?action=add', { course_id: courseId }, true);
+    async addToCart(productId, quantity = 1) {
+        return this.post('cart.php?action=add', { product_id: productId, quantity }, true);
     }
 
-    async removeFromCart(courseId) {
-        return this.delete(`cart.php?action=remove&course_id=${courseId}`, true);
+    async updateCartItem(productId, quantity) {
+        return this.put('cart.php?action=update', { product_id: productId, quantity }, true);
+    }
+
+    async removeFromCart(productId) {
+        return this.delete(`cart.php?action=remove&product_id=${productId}`, true);
     }
 
     async clearCart() {
         return this.delete('cart.php?action=clear', true);
     }
 
-    async checkout() {
-        return this.post('cart.php?action=checkout', {}, true);
+    // ========== Favorites APIs ==========
+    async getFavorites() {
+        return this.get('favorites.php?action=list', true);
     }
 
-    // ==========================================
-    // Reviews Endpoints
-    // ==========================================
-
-    async getReviews(courseId, page = 1) {
-        return this.get(`reviews.php?action=list&course_id=${courseId}&page=${page}`);
+    async addToFavorites(productId) {
+        return this.post('favorites.php?action=add', { product_id: productId }, true);
     }
 
-    async createReview(courseId, rating, comment) {
-        return this.post('reviews.php?action=create', { course_id: courseId, rating, comment }, true);
+    async removeFromFavorites(productId) {
+        return this.delete(`favorites.php?action=remove&product_id=${productId}`, true);
     }
 
-    async getReviewStats(courseId) {
-        return this.get(`reviews.php?action=stats&course_id=${courseId}`);
+    // ========== Orders APIs ==========
+    async getOrders() {
+        return this.get('orders.php?action=list', true);
     }
 
-    // ==========================================
-    // Lessons Endpoints
-    // ==========================================
-
-    async getLessons(courseId) {
-        return this.get(`lessons.php?action=list&course_id=${courseId}`, true);
+    async getOrder(id) {
+        return this.get(`orders.php?action=get&id=${id}`, true);
     }
 
-    async getLesson(id) {
-        return this.get(`lessons.php?action=get&id=${id}`, true);
+    async createOrder(data) {
+        return this.post('orders.php?action=create', data, true);
     }
 
-    async markLessonComplete(lessonId) {
-        return this.post('lessons.php?action=complete', { lesson_id: lessonId }, true);
+    async cancelOrder(id) {
+        return this.put(`orders.php?action=cancel&id=${id}`, {}, true);
+    }
+
+    // ========== Addresses APIs ==========
+    async getAddresses() {
+        return this.get('addresses.php?action=list', true);
+    }
+
+    async addAddress(data) {
+        return this.post('addresses.php?action=add', data, true);
+    }
+
+    async updateAddress(id, data) {
+        return this.put(`addresses.php?action=update&id=${id}`, data, true);
+    }
+
+    async deleteAddress(id) {
+        return this.delete(`addresses.php?action=delete&id=${id}`, true);
+    }
+
+    async setDefaultAddress(id) {
+        return this.put(`addresses.php?action=set-default&id=${id}`, {}, true);
     }
 }
 
-// Custom API Error class
+// Custom Error class
 class ApiError extends Error {
-    constructor(message, errors = {}, status = 400) {
+    constructor(message, errors = {}, status = 500) {
         super(message);
-        this.name = 'ApiError';
         this.errors = errors;
         this.status = status;
     }

@@ -1,11 +1,11 @@
 <?php
 /**
  * Cart API Endpoints
- * نقاط نهاية API لسلة التسوق
+ * نقاط نهاية API للسلة - المتجر الإلكتروني
  */
 
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../utils/Validator.php';
 require_once __DIR__ . '/../utils/Response.php';
 require_once __DIR__ . '/../utils/Auth.php';
 require_once __DIR__ . '/../models/Cart.php';
@@ -27,114 +28,149 @@ switch ($action) {
     case 'add':
         addToCart();
         break;
+    case 'update':
+        updateCartItem();
+        break;
     case 'remove':
         removeFromCart();
         break;
     case 'clear':
         clearCart();
         break;
-    case 'checkout':
-        checkout();
-        break;
     default:
         Response::error('إجراء غير صالح', [], 400);
 }
 
+/**
+ * Get cart items
+ */
 function getCart() {
-    $userId = Auth::requireAuth();
+    $user = Auth::requireAuth();
+    if (!$user) return;
 
-    $cart = new Cart();
-    $items = $cart->getByUser($userId);
-    $total = $cart->getTotal($userId);
-    $count = $cart->getCount($userId);
-
-    Response::success([
-        'items' => $items,
-        'total' => (float)$total,
-        'count' => (int)$count
-    ]);
+    try {
+        $cartModel = new Cart();
+        $cart = $cartModel->getByUserId($user['id']);
+        
+        Response::success('تم جلب السلة', $cart);
+    } catch (Exception $e) {
+        Response::error('فشل في جلب السلة', [], 500);
+    }
 }
 
+/**
+ * Add item to cart
+ */
 function addToCart() {
-    $userId = Auth::requireAuth();
+    $user = Auth::requireAuth();
+    if (!$user) return;
+
     $data = json_decode(file_get_contents('php://input'), true);
 
-    $courseId = (int)($data['course_id'] ?? 0);
-    
-    if (!$courseId) {
-        Response::error('معرف الدورة مطلوب', [], 400);
+    $validator = new Validator($data);
+    $validator->required('product_id', 'معرف المنتج مطلوب');
+
+    if (!$validator->isValid()) {
+        Response::error('بيانات غير صالحة', $validator->getErrors(), 422);
+        return;
     }
 
-    $cart = new Cart();
+    $quantity = isset($data['quantity']) ? (int)$data['quantity'] : 1;
 
-    // Check if already in cart
-    if ($cart->isInCart($userId, $courseId)) {
-        Response::error('الدورة موجودة بالفعل في السلة', [], 400);
-    }
+    try {
+        $cartModel = new Cart();
+        
+        // Check if product is in stock
+        if (!$cartModel->checkStock($data['product_id'], $quantity)) {
+            Response::error('الكمية المطلوبة غير متوفرة', [], 400);
+            return;
+        }
 
-    // Check if already enrolled
-    require_once __DIR__ . '/../models/Enrollment.php';
-    $enrollment = new Enrollment();
-    if ($enrollment->isEnrolled($userId, $courseId)) {
-        Response::error('أنت مسجل بالفعل في هذه الدورة', [], 400);
-    }
+        $cartModel->addItem($user['id'], $data['product_id'], $quantity);
+        $cart = $cartModel->getByUserId($user['id']);
 
-    if ($cart->add($userId, $courseId)) {
-        Response::success([
-            'count' => $cart->getCount($userId)
-        ], 'تمت إضافة الدورة إلى السلة');
-    } else {
-        Response::serverError('فشل إضافة الدورة إلى السلة');
+        Response::success('تمت إضافة المنتج إلى السلة', $cart, [], 201);
+    } catch (Exception $e) {
+        Response::error('فشل في إضافة المنتج', [], 500);
     }
 }
 
+/**
+ * Update cart item quantity
+ */
+function updateCartItem() {
+    $user = Auth::requireAuth();
+    if (!$user) return;
+
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    $validator = new Validator($data);
+    $validator->required('product_id', 'معرف المنتج مطلوب');
+    $validator->required('quantity', 'الكمية مطلوبة');
+    $validator->numeric('quantity', 'الكمية يجب أن تكون رقماً');
+    $validator->min('quantity', 1, 'الكمية يجب أن تكون 1 على الأقل');
+
+    if (!$validator->isValid()) {
+        Response::error('بيانات غير صالحة', $validator->getErrors(), 422);
+        return;
+    }
+
+    try {
+        $cartModel = new Cart();
+        
+        // Check if product is in stock
+        if (!$cartModel->checkStock($data['product_id'], $data['quantity'])) {
+            Response::error('الكمية المطلوبة غير متوفرة', [], 400);
+            return;
+        }
+
+        $cartModel->updateQuantity($user['id'], $data['product_id'], $data['quantity']);
+        $cart = $cartModel->getByUserId($user['id']);
+
+        Response::success('تم تحديث الكمية', $cart);
+    } catch (Exception $e) {
+        Response::error('فشل في تحديث الكمية', [], 500);
+    }
+}
+
+/**
+ * Remove item from cart
+ */
 function removeFromCart() {
-    $userId = Auth::requireAuth();
-    $courseId = (int)($_GET['course_id'] ?? 0);
-    
-    if (!$courseId) {
-        Response::error('معرف الدورة مطلوب', [], 400);
+    $user = Auth::requireAuth();
+    if (!$user) return;
+
+    $productId = (int)($_GET['product_id'] ?? 0);
+
+    if (!$productId) {
+        Response::error('معرف المنتج مطلوب', [], 400);
+        return;
     }
 
-    $cart = new Cart();
+    try {
+        $cartModel = new Cart();
+        $cartModel->removeItem($user['id'], $productId);
+        $cart = $cartModel->getByUserId($user['id']);
 
-    if ($cart->remove($userId, $courseId)) {
-        Response::success([
-            'count' => $cart->getCount($userId)
-        ], 'تمت إزالة الدورة من السلة');
-    } else {
-        Response::serverError('فشل إزالة الدورة من السلة');
+        Response::success('تمت إزالة المنتج من السلة', $cart);
+    } catch (Exception $e) {
+        Response::error('فشل في إزالة المنتج', [], 500);
     }
 }
 
+/**
+ * Clear cart
+ */
 function clearCart() {
-    $userId = Auth::requireAuth();
+    $user = Auth::requireAuth();
+    if (!$user) return;
 
-    $cart = new Cart();
+    try {
+        $cartModel = new Cart();
+        $cartModel->clear($user['id']);
 
-    if ($cart->clear($userId)) {
-        Response::success(null, 'تم تفريغ السلة');
-    } else {
-        Response::serverError('فشل تفريغ السلة');
-    }
-}
-
-function checkout() {
-    $userId = Auth::requireAuth();
-
-    $cart = new Cart();
-    $items = $cart->getByUser($userId);
-
-    if (empty($items)) {
-        Response::error('السلة فارغة', [], 400);
-    }
-
-    // Here you would integrate with payment gateway
-    // For now, we'll just create enrollments
-
-    if ($cart->checkout($userId)) {
-        Response::success(null, 'تمت عملية الشراء بنجاح');
-    } else {
-        Response::serverError('فشلت عملية الشراء');
+        Response::success('تم إفراغ السلة');
+    } catch (Exception $e) {
+        Response::error('فشل في إفراغ السلة', [], 500);
     }
 }

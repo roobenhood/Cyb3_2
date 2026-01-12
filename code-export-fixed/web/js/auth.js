@@ -1,198 +1,174 @@
 /**
  * Authentication Service
- * خدمة المصادقة
+ * خدمة المصادقة - المتجر الإلكتروني
  */
 
-class AuthService {
-    constructor() {
-        this.user = null;
-        this.init();
-    }
-
-    // Initialize auth state
-    init() {
-        const userData = localStorage.getItem(CONFIG.USER_KEY);
-        if (userData) {
-            try {
-                this.user = JSON.parse(userData);
-            } catch (e) {
-                this.logout();
-            }
-        }
-        this.updateUI();
-    }
-
-    // Check if user is logged in
-    isLoggedIn() {
-        return !!this.user && !!localStorage.getItem(CONFIG.TOKEN_KEY);
-    }
-
-    // Get current user
-    getUser() {
-        return this.user;
-    }
-
-    // Login
+const Auth = {
+    // Login user
     async login(email, password) {
         const response = await API.login(email, password);
         
         if (response.success) {
-            this.user = response.data.user;
             localStorage.setItem(CONFIG.TOKEN_KEY, response.data.token);
-            localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(this.user));
+            localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(response.data.user));
             this.updateUI();
         }
         
         return response;
-    }
+    },
 
-    // Register
-    async register(name, email, password, confirmPassword) {
-        const response = await API.register(name, email, password, confirmPassword);
+    // Register user
+    async register(name, email, password, password_confirmation) {
+        const response = await API.register(name, email, password, password_confirmation);
         
         if (response.success) {
-            this.user = response.data.user;
             localStorage.setItem(CONFIG.TOKEN_KEY, response.data.token);
-            localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(this.user));
+            localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(response.data.user));
             this.updateUI();
         }
         
         return response;
-    }
+    },
 
-    // Logout
+    // Logout user
     logout() {
-        this.user = null;
         localStorage.removeItem(CONFIG.TOKEN_KEY);
         localStorage.removeItem(CONFIG.USER_KEY);
         this.updateUI();
-        
-        // Redirect to home if on protected page
-        const protectedPages = ['profile.html', 'my-courses.html', 'cart.html'];
-        const currentPage = window.location.pathname.split('/').pop();
-        if (protectedPages.includes(currentPage)) {
-            window.location.href = 'index.html';
+        window.location.href = 'index.html';
+    },
+
+    // Check if user is logged in
+    isLoggedIn() {
+        return !!localStorage.getItem(CONFIG.TOKEN_KEY);
+    },
+
+    // Get current user
+    getUser() {
+        const userData = localStorage.getItem(CONFIG.USER_KEY);
+        return userData ? JSON.parse(userData) : null;
+    },
+
+    // Get token
+    getToken() {
+        return localStorage.getItem(CONFIG.TOKEN_KEY);
+    },
+
+    // Require authentication
+    requireAuth() {
+        if (!this.isLoggedIn()) {
+            const currentPage = window.location.pathname.split('/').pop();
+            window.location.href = `login.html?redirect=${currentPage}`;
+            return false;
         }
-    }
+        return true;
+    },
 
     // Update UI based on auth state
     updateUI() {
         const authButtons = document.getElementById('authButtons');
         const userMenu = document.getElementById('userMenu');
 
-        if (authButtons && userMenu) {
-            if (this.isLoggedIn()) {
-                authButtons.classList.add('hidden');
-                userMenu.classList.remove('hidden');
-            } else {
-                authButtons.classList.remove('hidden');
-                userMenu.classList.add('hidden');
-            }
+        if (this.isLoggedIn()) {
+            if (authButtons) authButtons.classList.add('hidden');
+            if (userMenu) userMenu.classList.remove('hidden');
+        } else {
+            if (authButtons) authButtons.classList.remove('hidden');
+            if (userMenu) userMenu.classList.add('hidden');
         }
     }
+};
 
-    // Require auth for protected actions
-    requireAuth() {
-        if (!this.isLoggedIn()) {
-            window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.href);
-            return false;
-        }
-        return true;
-    }
-}
-
-// Form Validation Helper
+// Form Validator
 class FormValidator {
     constructor(form) {
         this.form = form;
         this.errors = {};
     }
 
-    // Validate required field
     required(fieldName, message = CONFIG.MESSAGES.REQUIRED_FIELD) {
         const field = this.form.querySelector(`[name="${fieldName}"]`);
-        const value = field ? field.value.trim() : '';
-        
-        if (!value) {
+        if (field && !field.value.trim()) {
             this.errors[fieldName] = message;
-            return false;
         }
-        return true;
+        return this;
     }
 
-    // Validate email
     email(fieldName, message = CONFIG.MESSAGES.INVALID_EMAIL) {
         const field = this.form.querySelector(`[name="${fieldName}"]`);
-        const value = field ? field.value.trim() : '';
-        const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-        
-        if (value && !emailRegex.test(value)) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (field && field.value && !emailRegex.test(field.value)) {
             this.errors[fieldName] = message;
-            return false;
         }
-        return true;
+        return this;
     }
 
-    // Validate minimum length
-    minLength(fieldName, min, message) {
+    minLength(fieldName, length, message = null) {
         const field = this.form.querySelector(`[name="${fieldName}"]`);
-        const value = field ? field.value : '';
-        
-        if (value && value.length < min) {
-            this.errors[fieldName] = message || `يجب أن يكون على الأقل ${min} أحرف`;
-            return false;
+        if (field && field.value && field.value.length < length) {
+            this.errors[fieldName] = message || `يجب أن يكون ${length} أحرف على الأقل`;
         }
-        return true;
+        return this;
     }
 
-    // Validate matching fields
-    matches(fieldName, matchFieldName, message = CONFIG.MESSAGES.PASSWORD_MISMATCH) {
+    maxLength(fieldName, length, message = null) {
         const field = this.form.querySelector(`[name="${fieldName}"]`);
-        const matchField = this.form.querySelector(`[name="${matchFieldName}"]`);
-        
-        if (field && matchField && field.value !== matchField.value) {
+        if (field && field.value && field.value.length > length) {
+            this.errors[fieldName] = message || `يجب أن لا يتجاوز ${length} حرف`;
+        }
+        return this;
+    }
+
+    matches(fieldName, otherFieldName, message = CONFIG.MESSAGES.PASSWORD_MISMATCH) {
+        const field = this.form.querySelector(`[name="${fieldName}"]`);
+        const otherField = this.form.querySelector(`[name="${otherFieldName}"]`);
+        if (field && otherField && field.value !== otherField.value) {
             this.errors[fieldName] = message;
-            return false;
         }
-        return true;
+        return this;
     }
 
-    // Check if valid
+    phone(fieldName, message = 'رقم الهاتف غير صحيح') {
+        const field = this.form.querySelector(`[name="${fieldName}"]`);
+        const phoneRegex = /^[\d\s\+\-\(\)]{8,20}$/;
+        if (field && field.value && !phoneRegex.test(field.value)) {
+            this.errors[fieldName] = message;
+        }
+        return this;
+    }
+
     isValid() {
         return Object.keys(this.errors).length === 0;
     }
 
-    // Get errors
-    getErrors() {
-        return this.errors;
-    }
-
-    // Show errors in form
     showErrors() {
         // Clear previous errors
-        this.form.querySelectorAll('.form-error').forEach(el => el.remove());
-        this.form.querySelectorAll('.form-input').forEach(el => el.classList.remove('error'));
+        this.form.querySelectorAll('.error-message').forEach(el => el.remove());
+        this.form.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
 
         // Show new errors
         for (const [fieldName, message] of Object.entries(this.errors)) {
             const field = this.form.querySelector(`[name="${fieldName}"]`);
             if (field) {
                 field.classList.add('error');
-                const errorEl = document.createElement('div');
-                errorEl.className = 'form-error';
+                
+                const errorEl = document.createElement('span');
+                errorEl.className = 'error-message';
                 errorEl.textContent = message;
-                field.parentNode.appendChild(errorEl);
+                
+                field.parentNode.insertBefore(errorEl, field.nextSibling);
             }
         }
     }
 
-    // Clear errors
     clearErrors() {
         this.errors = {};
-        this.form.querySelectorAll('.form-error').forEach(el => el.remove());
-        this.form.querySelectorAll('.form-input').forEach(el => el.classList.remove('error'));
+        this.form.querySelectorAll('.error-message').forEach(el => el.remove());
+        this.form.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
     }
 }
 
-// Create global Auth instance
-const Auth = new AuthService();
+// Initialize auth UI on page load
+document.addEventListener('DOMContentLoaded', () => {
+    Auth.updateUI();
+});
