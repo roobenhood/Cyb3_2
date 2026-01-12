@@ -1,6 +1,0 @@
-import 'package:flutter/material.dart';
-class CheckoutScreen extends StatelessWidget { const CheckoutScreen({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('إتمام الطلب')), body: const Center(child: Text('صفحة الدفع'))); }
-class ProfileScreen extends StatelessWidget { const ProfileScreen({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('حسابي')), body: const Center(child: Text('الملف الشخصي'))); }
-class OrdersScreen extends StatelessWidget { const OrdersScreen({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('طلباتي')), body: const Center(child: Text('الطلبات'))); }
-class FavoritesScreen extends StatelessWidget { const FavoritesScreen({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('المفضلة')), body: const Center(child: Text('المفضلة'))); }
-class SettingsScreen extends StatelessWidget { const SettingsScreen({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('الإعدادات')), body: const Center(child: Text('الإعدادات'))); }
