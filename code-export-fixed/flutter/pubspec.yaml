@@ -1,0 +1,80 @@
+name: store_app
+description: تطبيق متجر إلكتروني متكامل
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase (إلزامي)
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.16.0
+  
+  # Social Login
+  google_sign_in: ^6.1.6
+  flutter_facebook_auth: ^6.0.4
+  
+  # HTTP للتواصل مع API
+  http: ^1.1.0
+  
+  # State Management
+  provider: ^6.1.1
+  
+  # قاعدة البيانات المحلية SQLite (ممنوع SharedPreferences!)
+  sqflite: ^2.3.0
+  path: ^1.8.3
+  path_provider: ^2.1.1
+  
+  # UI
+  cupertino_icons: ^1.0.2
+  google_fonts: ^6.1.0
+  cached_network_image: ^3.3.0
+  flutter_svg: ^2.0.9
+  shimmer: ^3.0.0
+  
+  # Storage للإعدادات فقط (ليس كقاعدة بيانات!)
+  shared_preferences: ^2.2.2
+  
+  # Utils
+  url_launcher: ^6.2.2
+  intl: ^0.18.1
+  
+  # الصلاحيات
+  permission_handler: ^11.0.1
+  
+  # الاتصال بالشبكة
+  connectivity_plus: ^5.0.1
+  
+  # Image Picker
+  image_picker: ^1.0.4
+  
+  # File Picker
+  file_picker: ^6.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/fonts/
+  
+  fonts:
+    - family: Cairo
+      fonts:
+        - asset: assets/fonts/Cairo-Regular.ttf
+        - asset: assets/fonts/Cairo-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Cairo-SemiBold.ttf
+          weight: 600
