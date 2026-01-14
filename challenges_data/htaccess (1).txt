@@ -1,0 +1,6 @@
+# حماية المجلد من الوصول المباشر
+Options -Indexes
+<Files "*">
+    Order deny,allow
+    Deny from all
+</Files>
