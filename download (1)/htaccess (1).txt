@@ -1,0 +1,40 @@
+# CyberCTF Main .htaccess - Security & URL Rewriting
+
+# تفعيل RewriteEngine
+RewriteEngine On
+
+# حماية من XSS
+<IfModule mod_headers.c>
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# منع عرض قائمة الملفات
+Options -Indexes
+
+# منع الوصول للملفات الحساسة
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+<FilesMatch "(config\.php|database\.sql)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# حماية مجلدات النظام
+RewriteRule ^(challenges_data|languages|includes)/.*$ - [F,L]
+
+# منع الوصول لملفات .git
+RewriteRule ^\.git - [F,L]
+
+# تحديد حجم الرفع الأقصى
+php_value upload_max_filesize 50M
+php_value post_max_size 55M
+
+# تعطيل عرض الأخطاء في الإنتاج
+php_flag display_errors off
+php_flag log_errors on

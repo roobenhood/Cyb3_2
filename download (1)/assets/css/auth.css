@@ -1,0 +1,373 @@
+
+.auth-container {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.auth-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: 40px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 0 40px var(--shadow-glow);
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.auth-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
+    border-radius: var(--border-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.auth-title {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+}
+
+.auth-subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    color: var(--text-muted);
+}
+
+.auth-footer a {
+    color: var(--neon-green);
+    transition: opacity var(--transition-fast);
+}
+
+.auth-footer a:hover { opacity: 0.8; }
+
+/* Terminal Effect */
+.terminal-box {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: 15px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    margin-top: 20px;
+}
+
+[data-theme="light"] .terminal-box {
+    background: #1e293b;
+    color: #00ff88;
+}
+
+.terminal-line { margin-bottom: 5px; }
+.terminal-prompt { color: var(--neon-green); }
+.terminal-output { color: var(--neon-cyan); }
+
+/* Verification Note */
+.verification-note {
+    background: rgba(0, 255, 136, 0.1);
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    border-radius: var(--border-radius-md);
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: var(--neon-green);
+}
+
+.security-note {
+    background: rgba(0, 229, 255, 0.1);
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    border-radius: var(--border-radius-md);
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: var(--neon-cyan);
+}
+
+.note-icon { font-size: 1.2rem; }
+
+/* OTP Input */
+.email-info {
+    background: rgba(0, 255, 136, 0.1);
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    border-radius: var(--border-radius-md);
+    padding: 15px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.email-label {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.email-value {
+    display: block;
+    color: var(--neon-green);
+    font-size: 1.1rem;
+    font-weight: 600;
+    direction: ltr;
+}
+
+.otp-input-container {
+    display: flex;
+    justify-content: center;
+}
+
+.otp-input {
+    width: 100%;
+    max-width: 250px;
+    text-align: center;
+    font-size: 2rem;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 10px;
+    padding: 15px;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    color: var(--neon-green);
+    transition: all var(--transition-normal);
+}
+
+.otp-input:focus {
+    outline: none;
+    border-color: var(--neon-green);
+    box-shadow: 0 0 20px var(--shadow-glow);
+}
+
+.otp-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.3;
+}
+
+/* Device Warning */
+.device-warning {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: var(--border-radius-md);
+    padding: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.warning-icon { font-size: 1.5rem; }
+
+.warning-text strong {
+    display: block;
+    color: var(--neon-yellow);
+    margin-bottom: 5px;
+}
+
+.warning-text p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Trust Device */
+.trust-device-group {
+    background: var(--bg-tertiary);
+    border-radius: var(--border-radius-md);
+    padding: 15px;
+    margin: 20px 0;
+}
+
+.checkbox-custom {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--neon-green);
+    border-radius: 5px;
+    position: relative;
+    transition: all var(--transition-normal);
+}
+
+.checkbox-label input:checked + .checkbox-custom {
+    background: var(--neon-green);
+}
+
+.checkbox-label input:checked + .checkbox-custom::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--bg-primary);
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.checkbox-text {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.checkbox-hint {
+    display: block;
+    margin-top: 8px;
+    margin-left: 32px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+[dir="rtl"] .checkbox-hint {
+    margin-left: 0;
+    margin-right: 32px;
+}
+
+/* Resend Section */
+.resend-section {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.resend-section p {
+    color: var(--text-muted);
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 25px 20px;
+    }
+    
+    .auth-title { font-size: 1.5rem; }
+    .auth-icon { width: 60px; height: 60px; font-size: 1.5rem; }
+    .otp-input { font-size: 1.5rem; letter-spacing: 6px; }
+}
+
+/* ========== LIGHT MODE FIXES ========== */
+[data-theme="light"] .auth-card {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .auth-title {
+    color: #1e293b;
+}
+
+[data-theme="light"] .auth-subtitle {
+    color: #64748b;
+}
+
+[data-theme="light"] .auth-footer {
+    color: #64748b;
+}
+
+[data-theme="light"] .auth-footer a {
+    color: #059669;
+}
+
+[data-theme="light"] .verification-note {
+    background: rgba(5, 150, 105, 0.1);
+    border-color: rgba(5, 150, 105, 0.3);
+    color: #047857;
+}
+
+[data-theme="light"] .security-note {
+    background: rgba(8, 145, 178, 0.1);
+    border-color: rgba(8, 145, 178, 0.3);
+    color: #0e7490;
+}
+
+[data-theme="light"] .email-info {
+    background: rgba(5, 150, 105, 0.1);
+    border-color: rgba(5, 150, 105, 0.3);
+}
+
+[data-theme="light"] .email-label {
+    color: #64748b;
+}
+
+[data-theme="light"] .email-value {
+    color: #059669;
+}
+
+[data-theme="light"] .otp-input {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    color: #059669;
+}
+
+[data-theme="light"] .otp-input:focus {
+    border-color: #059669;
+    box-shadow: 0 0 15px rgba(5, 150, 105, 0.2);
+}
+
+[data-theme="light"] .device-warning {
+    background: rgba(234, 179, 8, 0.1);
+    border-color: rgba(234, 179, 8, 0.3);
+}
+
+[data-theme="light"] .warning-text strong {
+    color: #b45309;
+}
+
+[data-theme="light"] .warning-text p {
+    color: #64748b;
+}
+
+[data-theme="light"] .trust-device-group {
+    background: #f8fafc;
+}
+
+[data-theme="light"] .checkbox-custom {
+    border-color: #059669;
+}
+
+[data-theme="light"] .checkbox-label input:checked + .checkbox-custom {
+    background: #059669;
+}
+
+[data-theme="light"] .checkbox-text {
+    color: #1e293b;
+}
+
+[data-theme="light"] .checkbox-hint {
+    color: #64748b;
+}
+
+[data-theme="light"] .resend-section {
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .resend-section p {
+    color: #64748b;
+}
+
+[data-theme="light"] .forgot-link {
+    color: #059669;
+}
+
+[data-theme="light"] .footer-divider {
+    color: #cbd5e1;
+}
