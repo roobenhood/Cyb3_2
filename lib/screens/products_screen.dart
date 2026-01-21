@@ -150,7 +150,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
                     padding: EdgeInsets.all(16.w(context)),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 0.7,
+                      // [الحل النهائي]: توحيد النسبة مع الشاشة الرئيسية
+                      childAspectRatio: 0.65,
                       crossAxisSpacing: 12.w(context),
                       mainAxisSpacing: 12.h(context),
                     ),

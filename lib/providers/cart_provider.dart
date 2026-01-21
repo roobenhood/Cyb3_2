@@ -19,7 +19,7 @@ class CartProvider with ChangeNotifier {
   
   double get shipping => subtotal > 200 ? 0 : 25; // شحن مجاني فوق 200
   
-  double get tax => subtotal * 0.15; // ضريبة 15%
+  double get tax => subtotal * 0.15;
   
   double get total => subtotal + shipping + tax;
 

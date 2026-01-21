@@ -20,7 +20,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // تحميل البيانات بعد بناء الواجهة
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
@@ -28,7 +27,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadData() async {
     final productsProvider = Provider.of<ProductsProvider>(context, listen: false);
-    // جلب كل البيانات اللازمة في وقت واحد
     await Future.wait([
       productsProvider.fetchCategories(),
       productsProvider.fetchFeaturedProducts(),
@@ -91,9 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ===================================
-              // 1. بانر ترحيبي (Welcome Banner)
-              // ===================================
+              // Welcome Banner
               Container(
                 margin: EdgeInsets.all(16.w(context)),
                 padding: EdgeInsets.all(20.w(context)),
@@ -130,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Text(
                             'اكتشف أحدث المنتجات',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withAlpha(230),
                             ),
                           ),
                         ],
@@ -145,9 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // ===================================
-              // 2. التصنيفات (Categories)
-              // ===================================
+              // Categories
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w(context)),
                 child: Row(
@@ -194,9 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               SizedBox(height: 16.h(context)),
 
-              // ===================================
-              // 3. المنتجات المميزة (Featured Products)
-              // ===================================
+              // Featured Products
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w(context)),
                 child: Text(
@@ -210,15 +202,15 @@ class _HomeScreenState extends State<HomeScreen> {
               Consumer<ProductsProvider>(
                 builder: (context, provider, child) {
                   if (provider.isLoading && provider.featuredProducts.isEmpty) {
-                    return Center(
+                    return const Center(
                       child: Padding(
-                        padding: EdgeInsets.all(32.w(context)),
-                        child: const CircularProgressIndicator(),
+                        padding: EdgeInsets.all(32),
+                        child: CircularProgressIndicator(),
                       ),
                     );
                   }
                   return SizedBox(
-                    height: 280.h(context), // تأكد أن هذا الارتفاع كافٍ للكارت
+                    height: 280.h(context),
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       padding: EdgeInsets.symmetric(horizontal: 12.w(context)),
@@ -238,9 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               SizedBox(height: 16.h(context)),
 
-              // ===================================
-              // 4. أحدث المنتجات (Latest Products Grid)
-              // ===================================
+              // Latest Products Grid
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w(context)),
                 child: Row(
@@ -264,17 +254,13 @@ class _HomeScreenState extends State<HomeScreen> {
               Consumer<ProductsProvider>(
                 builder: (context, provider, child) {
                   return GridView.builder(
-                    shrinkWrap: true, // ضروري لأن GridView داخل SingleChildScrollView
-                    physics: const NeverScrollableScrollPhysics(), // تعطيل السكرول الداخلي
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
                     padding: EdgeInsets.all(16.w(context)),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      // ---------------------------------------------------------
-                      // [الحل الجذري]: تغيير النسبة من 0.7 إلى 0.6
-                      // كلما قل الرقم، زاد طول الكارت رأسياً
-                      // هذا يوفر مساحة كافية للصور + النصوص + الأزرار بدون Overflow
-                      // ---------------------------------------------------------
-                      childAspectRatio: 0.6,
+                      // [الحل النهائي]: تقليل النسبة لجعل البطاقة أطول
+                      childAspectRatio: 0.65,
                       crossAxisSpacing: 12.w(context),
                       mainAxisSpacing: 12.h(context),
                     ),
@@ -295,7 +281,6 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() => _currentIndex = index);
           switch (index) {
             case 0:
-            // الرئيسية - نحن هنا
               break;
             case 1:
               Navigator.of(context).pushNamed('/products');

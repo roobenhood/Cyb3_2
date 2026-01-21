@@ -16,7 +16,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
-  late TextEditingController _addressController;
   bool _isEditing = false;
 
   @override
@@ -25,21 +24,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = Provider.of<AuthProvider>(context, listen: false).user;
     _nameController = TextEditingController(text: user?.name ?? '');
     _phoneController = TextEditingController(text: user?.phone ?? '');
-    _addressController = TextEditingController(text: user?.address ?? '');
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
-    _addressController.dispose();
     super.dispose();
   }
 
-  // تحديث الحقول إذا تغيرت بيانات المستخدم في الـ Provider
   void _syncControllers(app_user.User? user) {
     if (!_isEditing) {
-      // استخدام PostFrameCallback لضمان عدم التداخل مع عملية البناء (Build)
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           if (_nameController.text != (user?.name ?? '')) {
@@ -47,9 +42,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
           if (_phoneController.text != (user?.phone ?? '')) {
             _phoneController.text = user?.phone ?? '';
-          }
-          if (_addressController.text != (user?.address ?? '')) {
-            _addressController.text = user?.address ?? '';
           }
         }
       });
@@ -73,9 +65,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     setState(() {
                       _isEditing = !_isEditing;
                       if (!_isEditing) {
-                        _nameController.text = auth.user?.name ?? '';
-                        _phoneController.text = auth.user?.phone ?? '';
-                        _addressController.text = auth.user?.address ?? '';
+                        final user = auth.user;
+                        _nameController.text = user?.name ?? '';
+                        _phoneController.text = user?.phone ?? '';
                       }
                     });
                   },
@@ -97,7 +89,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         key: _formKey,
         child: Column(
           children: [
-            // صورة الملف الشخصي مع زر الكاميرا
             Stack(
               children: [
                 CircleAvatar(
@@ -116,9 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       backgroundColor: Theme.of(context).colorScheme.secondary,
                       child: IconButton(
                         icon: const Icon(Icons.camera_alt, color: Colors.white),
-                        onPressed: () {
-                          // TODO: إضافة وظيفة تغيير الصورة
-                        },
+                        onPressed: () {},
                       ),
                     ),
                   ),
@@ -126,50 +115,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             SizedBox(height: 24.h(context)),
 
-            // البريد الإلكتروني (للعرض فقط)
             TextFormField(
               initialValue: auth.user?.email,
               enabled: false,
-              decoration: const InputDecoration(
-                labelText: 'البريد الإلكتروني',
-                prefixIcon: Icon(Icons.email_outlined),
-              ),
+              decoration: const InputDecoration(labelText: 'البريد الإلكتروني', prefixIcon: Icon(Icons.email_outlined)),
             ),
             SizedBox(height: 16.h(context)),
 
-            // حقل الاسم
             TextFormField(
               controller: _nameController,
               enabled: _isEditing,
-              decoration: const InputDecoration(
-                labelText: 'الاسم',
-                prefixIcon: Icon(Icons.person_outline),
-              ),
+              decoration: const InputDecoration(labelText: 'الاسم', prefixIcon: Icon(Icons.person_outline)),
               validator: Validators.validateName,
             ),
             SizedBox(height: 16.h(context)),
 
-            // حقل الهاتف
             TextFormField(
               controller: _phoneController,
               enabled: _isEditing,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'رقم الهاتف',
-                prefixIcon: Icon(Icons.phone_outlined),
-              ),
-            ),
-            SizedBox(height: 16.h(context)),
-
-            // حقل العنوان
-            TextFormField(
-              controller: _addressController,
-              enabled: _isEditing,
-              maxLines: 2,
-              decoration: const InputDecoration(
-                labelText: 'العنوان',
-                prefixIcon: Icon(Icons.location_on_outlined),
-              ),
+              decoration: const InputDecoration(labelText: 'رقم الهاتف', prefixIcon: Icon(Icons.phone_outlined)),
             ),
 
             if (_isEditing) ...[
@@ -182,10 +147,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     if (await auth.updateProfile(
                       name: _nameController.text.trim(),
                       phone: _phoneController.text.trim(),
-                      address: _addressController.text.trim(),
                     )) {
                       setState(() => _isEditing = false);
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم التحديث بنجاح')));
+                      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم التحديث بنجاح')));
                     }
                   },
                   child: auth.isLoading
@@ -197,46 +161,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             SizedBox(height: 32.h(context)),
 
-            // قائمة الخيارات الكاملة التي كانت مفقودة
-            _buildMenuItem(
-              icon: Icons.receipt_long_outlined,
-              title: 'طلباتي',
-              onTap: () => Navigator.of(context).pushNamed('/orders'),
-            ),
-            _buildMenuItem(
-              icon: Icons.favorite_outline,
-              title: 'المفضلة',
-              onTap: () => Navigator.of(context).pushNamed('/favorites'),
-            ),
-            _buildMenuItem(
-              icon: Icons.settings_outlined,
-              title: 'الإعدادات',
-              onTap: () => Navigator.of(context).pushNamed('/settings'),
-            ),
-            _buildMenuItem(
-              icon: Icons.help_outline,
-              title: 'المساعدة والدعم',
-              onTap: () {},
-            ),
-            _buildMenuItem(
-              icon: Icons.info_outline,
-              title: 'عن التطبيق',
-              onTap: () {
-                showAboutDialog(
-                  context: context,
-                  applicationName: 'متجري',
-                  applicationVersion: '1.0.0',
-                  applicationIcon: Icon(Icons.shopping_bag, size: 48.sp(context)),
-                );
-              },
-            ),
+            _buildMenuItem(icon: Icons.receipt_long_outlined, title: 'طلباتي', onTap: () => Navigator.of(context).pushNamed('/orders')),
+            _buildMenuItem(icon: Icons.favorite_outline, title: 'المفضلة', onTap: () => Navigator.of(context).pushNamed('/favorites')),
+            _buildMenuItem(icon: Icons.settings_outlined, title: 'الإعدادات', onTap: () => Navigator.of(context).pushNamed('/settings')),
+            _buildMenuItem(icon: Icons.help_outline, title: 'المساعدة والدعم', onTap: () {}),
+            _buildMenuItem(icon: Icons.info_outline, title: 'عن التطبيق', onTap: () {
+              showAboutDialog(context: context, applicationName: 'متجري', applicationVersion: '1.0.0', applicationIcon: Icon(Icons.shopping_bag, size: 48.sp(context)));
+            }),
             const Divider(),
-            _buildMenuItem(
-              icon: Icons.logout,
-              title: 'تسجيل الخروج',
-              color: Colors.red,
-              onTap: () => _showLogoutDialog(context, auth),
-            ),
+            _buildMenuItem(icon: Icons.logout, title: 'تسجيل الخروج', color: Colors.red, onTap: () => _showLogoutDialog(context, auth)),
           ],
         ),
       ),

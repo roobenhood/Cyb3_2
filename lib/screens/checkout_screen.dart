@@ -32,7 +32,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   void _loadUserData() {
     final auth = Provider.of<AuthProvider>(context, listen: false);
     if (auth.user != null) {
-      _addressController.text = auth.user!.address ?? '';
       _phoneController.text = auth.user!.phone ?? '';
     }
   }

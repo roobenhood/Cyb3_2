@@ -27,13 +27,12 @@ import 'screens/settings_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // --- إعادة تهيئة Firebase ---
   await Firebase.initializeApp(
     options: const FirebaseOptions(
-      apiKey: "FS5DEiKrSrd8LSY7cQXls",
-      appId: "3fc8e178be35",
-      messagingSenderId: "7520",
-      projectId: "t2-f774a",
+      apiKey: "AIzaSyAAJYRFMnjIqXFS5DEiKrSrd8LSY7cQXls",
+      appId: "1:210860897520:android:7cfd1ccbff3fc8e178be35",
+      messagingSenderId: "210860897520",
+      projectId: "test2-f774a",
     ),
   );
   runApp(const MyApp());

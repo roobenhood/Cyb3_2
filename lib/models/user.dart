@@ -3,9 +3,7 @@ class User {
   final String name;
   final String email;
   final String? phone;
-  final String? address;
   final String? avatar;
-  final String role;
   final DateTime createdAt;
 
   User({
@@ -13,25 +11,28 @@ class User {
     required this.name,
     required this.email,
     this.phone,
-    this.address,
     this.avatar,
-    required this.role,
     required this.createdAt,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] ?? 0,
-      name: json['name'] ?? '',
-      email: json['email'] ?? '',
-      phone: json['phone'],
-      address: json['address'],
-      avatar: json['avatar'],
-      role: json['role'] ?? 'customer',
-      createdAt: json['created_at'] != null 
-          ? DateTime.parse(json['created_at']) 
+      id: _parseInt(json['id']) ?? 0,
+      name: json['name']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      phone: json['phone']?.toString(),
+      avatar: json['avatar']?.toString(),
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now()
           : DateTime.now(),
     );
+  }
+
+  static int? _parseInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value);
+    return null;
   }
 
   Map<String, dynamic> toJson() {
@@ -40,9 +41,7 @@ class User {
       'name': name,
       'email': email,
       'phone': phone,
-      'address': address,
       'avatar': avatar,
-      'role': role,
       'created_at': createdAt.toIso8601String(),
     };
   }
@@ -52,9 +51,7 @@ class User {
     String? name,
     String? email,
     String? phone,
-    String? address,
     String? avatar,
-    String? role,
     DateTime? createdAt,
   }) {
     return User(
@@ -62,9 +59,7 @@ class User {
       name: name ?? this.name,
       email: email ?? this.email,
       phone: phone ?? this.phone,
-      address: address ?? this.address,
       avatar: avatar ?? this.avatar,
-      role: role ?? this.role,
       createdAt: createdAt ?? this.createdAt,
     );
   }

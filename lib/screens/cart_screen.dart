@@ -104,8 +104,7 @@ class CartScreen extends StatelessWidget {
                                 children: [
                                   Text(
                                     item.product?.name ?? 'منتج #${item.productId}',
-                                    style:
-                                        Theme.of(context).textTheme.titleMedium,
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold), // [الحل النهائي]: تصغير الخط ليتوافق مع بطاقة المنتج
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
